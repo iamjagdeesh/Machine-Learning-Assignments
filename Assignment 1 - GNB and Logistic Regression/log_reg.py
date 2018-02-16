@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 from gnb import GNB
 
@@ -44,13 +45,14 @@ class LR(GNB):
         return accuracy
 
 if __name__ == "__main__":
-    obj = LR()
-    X, y, df = obj.load_file()
-    sets = obj.k_folds_cross_validation(X, y)
-    for set in sets:
-        learnt_params = obj.train(set[0], set[2])
-        accuracy = obj.predict(set[1], set[3], learnt_params)
-        print("Accuracy: ", accuracy)
-        print(learnt_params)
-
-    print("All set to code!")
+    obj1 = GNB()
+    plot_curve_GNB_dict = obj1.run()
+    obj2 = LR()
+    plot_curve_LR_dict = obj2.run()
+    x, y_gnb = zip(*sorted(plot_curve_GNB_dict.items()))
+    x, y_lr = zip(*sorted(plot_curve_LR_dict.items()))
+    plt.plot(x, y_gnb, 'r')
+    plt.plot(x, y_lr, 'b')
+    plt.ylabel('accuracy')
+    plt.xlabel('size_of_dataset')
+    plt.show()

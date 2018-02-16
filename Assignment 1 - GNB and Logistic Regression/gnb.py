@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 class GNB(object):
 
-    def k_folds_cross_validation(self, X, y, k=3):
+    def k_folds_cross_validation(self, X, y, k=3, data_fraction = 1.0):
         X, y = self.shuffle(X, y)
         no_of_examples = len(y)
         delta_remaining = {}
@@ -20,7 +21,9 @@ class GNB(object):
             X_test, y_test = X_split[i], y_split[i]
             X_train = np.concatenate(X_split[:i] + X_split[i+1:], axis=0)
             y_train = np.concatenate(y_split[:i] + y_split[i+1:], axis=0)
-            splits.append([X_train, X_test, y_train, y_test])
+            for runs in range(5):
+                X_train, y_train = self.shuffle(X_train,y_train,data_fraction)
+                splits.append([X_train, X_test, y_train, y_test])
         if no_of_delta_remaining != 0:
             np.append(splits[-1][0], delta_remaining["X"], axis=0)
             np.append(splits[-1][2], delta_remaining["y"], axis=0)
@@ -40,10 +43,13 @@ class GNB(object):
         positive_matrix = X_train[y_train[:,0] == 1.0]
 
         learnt_params = {}
-        learnt_params["p_y_1"] = positive_matrix.shape[0] / (positive_matrix.shape[0] + negative_matrix.shape[0])
+        try:
+            learnt_params["p_y_1"] = positive_matrix.shape[0] / (positive_matrix.shape[0] + negative_matrix.shape[0])
+        except ZeroDivisionError:
+            learnt_params["p_y_1"] = 0.5
         learnt_params["mu_pos"] = np.mean(positive_matrix, axis=0)
         learnt_params["var_pos"] = np.var(positive_matrix, axis=0)
-        learnt_params["p_y_0"] = negative_matrix.shape[0] / (positive_matrix.shape[0] + negative_matrix.shape[0])
+        learnt_params["p_y_0"] = 1 - learnt_params["p_y_1"]
         learnt_params["mu_neg"] = np.mean(negative_matrix, axis=0)
         learnt_params["var_neg"] = np.var(negative_matrix, axis=0)
 
@@ -68,23 +74,40 @@ class GNB(object):
 
         return accuracy
 
-    def shuffle(self, X, y):
-        seed = np.random.random_integers(5,high=1000)
-        np.random.seed(seed)
+    def shuffle(self, X, y, data_fraction=1.0):
+        # seed = np.random.random_integers(5,high=1000)
+        # np.random.seed(seed)
         rows = np.arange(X.shape[0])
         np.random.shuffle(rows)
+        rows = rows[0:int(data_fraction*X.shape[0])]
 
         return X[rows], y[rows]
+
+    def plot_learning_curve(self, plot_curve_dict):
+        x, y = zip(*sorted(plot_curve_dict.items()))
+        plt.plot(x, y)
+        plt.ylabel('accuracy')
+        plt.xlabel('size_of_dataset')
+        plt.show()
+
+        return None
+
+    def run(self):
+        X, y, df = self.load_file()
+        data_fractions_dict = {.01: [], .02: [], .05: [], .1: [], .625: [], 1.0: []}
+        for data_fraction in data_fractions_dict.keys():
+            sets = self.k_folds_cross_validation(X, y, data_fraction=data_fraction)
+            for set in sets:
+                learnt_params = self.train(set[0], set[2])
+                accuracy = self.predict(set[1], set[3], learnt_params)
+                print(accuracy)
+                data_fractions_dict[data_fraction].append(accuracy)
+        plot_curve_dict = {key: np.mean(values) for key, values in data_fractions_dict.items()}
+        self.plot_learning_curve(plot_curve_dict)
+
+        return plot_curve_dict
 
 
 if __name__ == "__main__":
     obj = GNB()
-    X, y, df = obj.load_file()
-    sets = obj.k_folds_cross_validation(X,y)
-    for set in sets:
-        learnt_params = obj.train(set[0], set[2])
-        accuracy = obj.predict(set[1], set[3], learnt_params)
-        print("Accuracy: ", accuracy)
-        print(learnt_params)
-
-    print("All set to code!")
+    obj.run()
