@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 class GNB(object):
 
-    def k_folds_cross_validation(self, X, y, k=3, data_fraction = 1.0):
+    def k_folds_cross_validation(self, X, y, k=3, data_fraction = 1.0, runs=1):
         X, y = self.shuffle(X, y)
         no_of_examples = len(y)
         delta_remaining = {}
@@ -21,7 +21,7 @@ class GNB(object):
             X_test, y_test = X_split[i], y_split[i]
             X_train = np.concatenate(X_split[:i] + X_split[i+1:], axis=0)
             y_train = np.concatenate(y_split[:i] + y_split[i+1:], axis=0)
-            for runs in range(5):
+            for each_run in range(runs):
                 X_train, y_train = self.shuffle(X_train,y_train,data_fraction)
                 splits.append([X_train, X_test, y_train, y_test])
         if no_of_delta_remaining != 0:
@@ -56,14 +56,14 @@ class GNB(object):
         return learnt_params
 
     def predict(self, X_test, y_test, learnt_params):
-        denom = np.sqrt(2*np.pi*np.square(learnt_params["var_pos"]))
-        numer = np.exp(-np.square(X_test - learnt_params["mu_pos"]) / (2*np.square(learnt_params["var_pos"])))
+        denom = np.sqrt(2*np.pi*learnt_params["var_pos"])
+        numer = np.exp(-np.square(X_test - learnt_params["mu_pos"]) / (2*learnt_params["var_pos"]))
         p_x_y = numer/denom
         p_x_y_pos = p_x_y[:,0]*p_x_y[:,1]*p_x_y[:,2]
         p_y_1_mul_p_x_y_pos = learnt_params["p_y_1"] * p_x_y_pos
 
-        denom = np.sqrt(2 * np.pi * np.square(learnt_params["var_neg"]))
-        numer = np.exp(-np.square(X_test - learnt_params["mu_neg"]) / (2 * np.square(learnt_params["var_neg"])))
+        denom = np.sqrt(2 * np.pi * learnt_params["var_neg"])
+        numer = np.exp(-np.square(X_test - learnt_params["mu_neg"]) / (2 * learnt_params["var_neg"]))
         p_x_y = numer / denom
         p_x_y_neg = p_x_y[:, 0] * p_x_y[:, 1] * p_x_y[:, 2]
         p_y_0_mul_p_x_y_neg = learnt_params["p_y_0"] * p_x_y_neg
@@ -96,7 +96,7 @@ class GNB(object):
         X, y, df = self.load_file()
         data_fractions_dict = {.01: [], .02: [], .05: [], .1: [], .625: [], 1.0: []}
         for data_fraction in data_fractions_dict.keys():
-            sets = self.k_folds_cross_validation(X, y, data_fraction=data_fraction)
+            sets = self.k_folds_cross_validation(X, y, data_fraction=data_fraction, runs=5)
             for set in sets:
                 learnt_params = self.train(set[0], set[2])
                 accuracy = self.predict(set[1], set[3], learnt_params)
@@ -106,6 +106,23 @@ class GNB(object):
         self.plot_learning_curve(plot_curve_dict)
 
         return plot_curve_dict
+
+    def generate_samples(self):
+        X, y, df = self.load_file()
+        sets = self.k_folds_cross_validation(X, y, data_fraction=1.0, runs=1)
+        for set in sets:
+            learnt_params = self.train(set[0], set[2])
+            accuracy = self.predict(set[1], set[3], learnt_params)
+            print(accuracy)
+            sigma_pos = np.sqrt(learnt_params["var_pos"])
+            mu_pos = learnt_params["mu_pos"]
+            generated_samples = np.random.normal(mu_pos, sigma_pos, (400, 4))
+            new_mu_pos = np.mean(generated_samples, axis=0)
+            new_var_pos = np.var(generated_samples, axis=0)
+
+            return None
+
+
 
 
 if __name__ == "__main__":

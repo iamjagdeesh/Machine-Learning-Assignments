@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -7,6 +6,7 @@ from gnb import GNB
 class LR(GNB):
 
     def sigmoid_fun(self, z):
+
         return 1 / (1 + np.exp(-z))
 
     def train(self, X_train, y_train, learning_rate=0.8):
@@ -16,14 +16,12 @@ class LR(GNB):
         n = X_train.shape[0]
         w = np.zeros((n,1))
         b = 0
-
         for i in range(500):
             z = np.dot(w.T,X_train)+b
             a = self.sigmoid_fun(z)
             dz = a - y_train
             db = np.sum(dz) / m
             dw = np.matmul(X_train, dz.T) / m
-
             w = w - learning_rate * dw
             b = b - learning_rate * db
 
@@ -36,12 +34,11 @@ class LR(GNB):
         n = X_test.shape[0]
         w = learnt_params[0]
         b = learnt_params[1]
-
         z = np.dot(w.T, X_test) + b
         a = self.sigmoid_fun(z)
         y_pred = (a > 0.5) * 1.0
-
         accuracy = np.sum(y_test == y_pred, axis=1) / m
+
         return accuracy
 
 if __name__ == "__main__":
