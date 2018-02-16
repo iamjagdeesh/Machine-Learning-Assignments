@@ -116,15 +116,19 @@ class GNB(object):
             print(accuracy)
             sigma_pos = np.sqrt(learnt_params["var_pos"])
             mu_pos = learnt_params["mu_pos"]
+            print("Mean of training: ", learnt_params["mu_pos"])
+            print("Variance of training: ", learnt_params["var_pos"])
             generated_samples = np.random.normal(mu_pos, sigma_pos, (400, 4))
             new_mu_pos = np.mean(generated_samples, axis=0)
             new_var_pos = np.var(generated_samples, axis=0)
+            print("Mean of generated set: ", new_mu_pos)
+            print("Variance of generated set: ", new_var_pos)
 
-            return None
+        return None
 
 
 
 
 if __name__ == "__main__":
     obj = GNB()
-    obj.run()
+    obj.generate_samples()
