@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from gnb import GNB
 
 class LR(GNB):
+    def __init__(self, algo="Logistic Regression"):
+        self.algo = algo
 
     def sigmoid_fun(self, z):
 
@@ -15,17 +17,17 @@ class LR(GNB):
         m = X_train.shape[1]
         n = X_train.shape[0]
         w = np.zeros((n,1))
-        b = 0
+        w_0 = 0
         for i in range(500):
-            z = np.dot(w.T,X_train)+b
-            a = self.sigmoid_fun(z)
-            dz = a - y_train
-            db = np.sum(dz) / m
-            dw = np.matmul(X_train, dz.T) / m
-            w = w - learning_rate * dw
-            b = b - learning_rate * db
+            z = np.dot(w.T,X_train)+w_0
+            p_y_x_cap = self.sigmoid_fun(z)
+            diff = y_train - p_y_x_cap
+            dw_0 = np.sum(diff) / m
+            dw = np.matmul(X_train, diff.T) / m
+            w = w + learning_rate * dw
+            w_0 = w_0 + learning_rate * dw_0
 
-        return [w, b]
+        return [w, w_0]
 
     def predict(self, X_test, y_test, learnt_params):
         X_test = X_test.T
@@ -33,11 +35,11 @@ class LR(GNB):
         m = X_test.shape[1]
         n = X_test.shape[0]
         w = learnt_params[0]
-        b = learnt_params[1]
-        z = np.dot(w.T, X_test) + b
-        a = self.sigmoid_fun(z)
-        y_pred = (a > 0.5) * 1.0
-        accuracy = np.sum(y_test == y_pred, axis=1) / m
+        w_0 = learnt_params[1]
+        z = np.dot(w.T, X_test) + w_0
+        p_y_x = self.sigmoid_fun(z)
+        y_pred = (p_y_x > 0.5) * 1.0
+        accuracy = np.sum(y_test == y_pred, axis=1) / float(m)
 
         return accuracy
 
@@ -48,8 +50,12 @@ if __name__ == "__main__":
     plot_curve_LR_dict = obj2.run()
     x, y_gnb = zip(*sorted(plot_curve_GNB_dict.items()))
     x, y_lr = zip(*sorted(plot_curve_LR_dict.items()))
-    plt.plot(x, y_gnb, 'r')
-    plt.plot(x, y_lr, 'b')
+    fig = plt.figure()
+    plt.title('Accuracy vs Size of data curve')
+    plt.plot(x, y_gnb, 'r', label='Gaussian Naive Bayes')
+    plt.plot(x, y_lr, 'b', label='Logistic Regression')
     plt.ylabel('accuracy')
     plt.xlabel('size_of_dataset')
+    plt.legend()
     plt.show()
+    fig.savefig('Gaussian NB and Logistic Regression combined.png')
