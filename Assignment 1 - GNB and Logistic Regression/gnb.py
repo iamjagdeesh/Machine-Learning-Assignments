@@ -128,11 +128,11 @@ class GNB(object):
             new_var_pos = np.var(generated_samples, axis=0)
             print("Mean of training set:", learnt_params["mu_pos"])
             print("Mean of generated set:", new_mu_pos)
-            percentage_of_mean_deviated = np.fabs((new_mu_pos - learnt_params["mu_pos"]) / np.maximum(np.fabs(new_mu_pos), np.fabs(learnt_params["mu_pos"])))*100
+            percentage_of_mean_deviated = (np.fabs((np.fabs(new_mu_pos) - np.fabs(learnt_params["mu_pos"]))) / np.maximum(np.fabs(new_mu_pos), np.fabs(learnt_params["mu_pos"])))*100
             print("Percentage of Mean Deviated:", percentage_of_mean_deviated)
             print("Variance of training set:", learnt_params["var_pos"])
             print("Variance of generated set:", new_var_pos)
-            percentage_of_var_deviated = np.fabs((new_var_pos - learnt_params["var_pos"]) / np.maximum(np.fabs(new_var_pos), np.fabs(learnt_params["var_pos"])))*100
+            percentage_of_var_deviated = (np.fabs((np.fabs(new_var_pos) - np.fabs(learnt_params["var_pos"]))) / np.maximum(np.fabs(new_var_pos), np.fabs(learnt_params["var_pos"])))*100
             print("Percentage of Variance Deviated:", percentage_of_var_deviated)
             i += 1
 
