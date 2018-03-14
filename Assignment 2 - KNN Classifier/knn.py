@@ -27,30 +27,30 @@ class KNN(object):
 
         return X_test,y_test,df_test
 
-    def get_distance_matrix_of_test_to_train(self):
+    def get_distance_matrix_of_train_to_train(self, k=9):
+        m_train, n_train = self.X_train.shape
+        distance_matrix_of_train_to_train = np.zeros(shape=(m_train, m_train))
+        for i in range(m_train):
+            u = self.X_train[[i], :]
+            squared = np.square(u-self.X_train)
+            summed = np.sum(squared, axis=1)
+            sqrted = np.sqrt(summed)
+            distance_matrix_of_train_to_train[i] = sqrted
+
+        return distance_matrix_of_train_to_train
+
+    def get_distance_matrix_of_test_to_train(self, k=9):
         m_train, n_train = self.X_train.shape
         m_test, n_test = self.X_test.shape
         distance_matrix_of_test_to_train = np.zeros(shape=(m_test, m_train))
         for i in range(m_test):
             u = self.X_test[[i], :]
-            for j in range(m_train):
-                v = self.X_train[[j], :]
-                euclidean_distance = dist.euclidean(u, v)
-                distance_matrix_of_test_to_train[i, j] = euclidean_distance
+            squared = np.square(u-self.X_train)
+            summed = np.sum(squared, axis=1)
+            sqrted = np.sqrt(summed)
+            distance_matrix_of_test_to_train[i] = sqrted
 
         return distance_matrix_of_test_to_train
-
-    def get_distance_matrix_of_train_to_train(self):
-        m_train, n_train = self.X_train.shape
-        distance_matrix_of_train_to_train = np.zeros(shape=(m_train, m_train))
-        for i in range(m_train):
-            u = self.X_train[[i], :]
-            for j in range(m_train):
-                v = self.X_train[[j], :]
-                euclidean_distance = dist.euclidean(u, v)
-                distance_matrix_of_train_to_train[i, j] = euclidean_distance
-
-        return distance_matrix_of_train_to_train
 
     def predict_test_data(self, k=9):
         m_train,n_train = self.X_train.shape
