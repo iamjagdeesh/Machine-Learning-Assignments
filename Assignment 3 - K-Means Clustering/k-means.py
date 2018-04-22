@@ -57,9 +57,9 @@ class Kmeans(object):
             data_belonging_to_i = self.X[indices_belonging_to_i]
             u = centroids[[i], :]
             squared = np.square(u - data_belonging_to_i)
-            summed = np.sum(squared, axis=1)
-            sqrted = np.sqrt(summed)
-            F_mu_c += np.sum(sqrted)
+            summed = np.sum(squared) #, axis=1)
+            # sqrted = np.sqrt(summed)
+            F_mu_c += summed # np.sum(summed)
 
         return F_mu_c
 
