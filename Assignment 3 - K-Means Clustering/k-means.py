@@ -78,7 +78,7 @@ class Kmeans(object):
         Randomly select K centroids from the dataset
         :return:
         """
-        np.random.seed(1)
+        np.random.seed(11)
         rows = np.arange(self.X.shape[0])
         np.random.shuffle(rows)
         rows = rows[0:K]
